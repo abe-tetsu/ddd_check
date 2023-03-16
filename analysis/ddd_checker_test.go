@@ -13,6 +13,4 @@ import (
 func TestAnalyzer(t *testing.T) {
 	testdata := testutil.WithModules(t, analysistest.TestData(), nil)
 	analysistest.Run(t, testdata, analysis.AnalyzerID, "a/...")
-	//analysistest.Run(t, testdata, analysis.AnalyzerIDConstructor, "a/...")
-	//analysistest.Run(t, testdata, analysis.AnalyzerIDConstructor, "a/...")
 }

@@ -8,7 +8,7 @@ func NewUserInfoDataTestID(username string, userNumber int) UserInfoDataID { // 
 	return UserInfoDataID(username + "_" + string(userNumber))
 }
 
-type UserData struct {
+type UserData struct { // want "ファイル名user_info_data.goとID名UserDataが一致していません"
 	ID         UserInfoDataID
 	Username   string
 	UserNumber int
@@ -16,7 +16,7 @@ type UserData struct {
 	UpdatedAt  time.Time
 }
 
-func NewUserData(username string, userNumber int) UserData {
+func NewUserData(username string, userNumber int) UserData { // want "コンストラクタ名NewUserDataがNewUserInfoDataではありません"
 	return UserData{
 		ID:         NewUserInfoDataTestID(username, userNumber),
 		Username:   username,

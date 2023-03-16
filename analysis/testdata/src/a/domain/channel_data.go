@@ -15,7 +15,7 @@ type ChannelData struct {
 	UpdatedAt time.Time
 }
 
-func NewChannel(channelID string) ChannelData {
+func NewChannel(channelID string) ChannelData { // want "コンストラクタ名NewChannelがNewChannelDataではありません"
 	return ChannelData{
 		ID:        NewChannelDataID(channelID),
 		ChannelID: channelID,

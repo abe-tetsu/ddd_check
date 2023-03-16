@@ -11,7 +11,7 @@ func NewUserChatDataID(username string, userNumber int) UserChatDataID { // OK
 	return UserChatDataID(username + "_" + string(userNumber))
 }
 
-type UserChatData struct {
+type UserChatData struct { // OK
 	ID         UserChatDataID
 	Username   string
 	UserNumber int
@@ -19,7 +19,7 @@ type UserChatData struct {
 	UpdatedAt  time.Time
 }
 
-func NewUserChatData(username string, userNumber int) UserChatData {
+func NewUserChatData(username string, userNumber int) UserChatData { // OK
 	return UserChatData{
 		ID:         NewUserChatDataID(username, userNumber),
 		Username:   username,
