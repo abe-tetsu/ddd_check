@@ -1,4 +1,4 @@
-package domain
+package domain // want "IDのコンストラクタが定義されていません"
 
 import "time"
 

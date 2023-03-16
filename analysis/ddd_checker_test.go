@@ -9,9 +9,10 @@ import (
 	"golang.org/x/tools/go/analysis/analysistest"
 )
 
-// TestAnalyzer is a test for AnalyzerStruct.
+// TestAnalyzer is a test for AnalyzerIDConstructor.
 func TestAnalyzer(t *testing.T) {
 	testdata := testutil.WithModules(t, analysistest.TestData(), nil)
 	analysistest.Run(t, testdata, analysis.AnalyzerID, "a/...")
-	//analysistest.Run(t, testdata, analysis.AnalyzerStruct, "a/...")
+	//analysistest.Run(t, testdata, analysis.AnalyzerIDConstructor, "a/...")
+	//analysistest.Run(t, testdata, analysis.AnalyzerIDConstructor, "a/...")
 }

@@ -11,7 +11,7 @@ import (
 
 const docID = "analysis is ..."
 
-// AnalyzerStruct is ...
+// AnalyzerIDConstructor is ...
 var AnalyzerID = &analysis.Analyzer{
 	Name: "analysis",
 	Doc:  docID,
@@ -42,43 +42,90 @@ func runID(pass *analysis.Pass) (any, error) {
 			return nil, err
 		}
 
-		AnalyzerRun(pass, f, fileName, ConvertFileName(fileName))
+		fmt.Println("AnalyzerRun Ident: ", ConvertFileName(fileName), "Start =====================")
+		idIdent := AnalyzerRun(pass, f, fileName, ConvertFileName(fileName))
+		fmt.Println("AnalyzerRun Ident: ", ConvertFileName(fileName), "End =====================")
+
+		if idIdent == nil {
+			return nil, nil
+		}
+
+		// IDのコンストラクタが定義されていることを確認
+		fmt.Println("AnalyzerIDConstructorRun: ", ConvertFileName(fileName), "Start =====================")
+		AnalyzerIDConstructorRun(pass, idIdent, f, fileName, ConvertFileName(fileName))
+		fmt.Println("AnalyzerIDConstructorRun: ", ConvertFileName(fileName), "End =====================")
+
 	}
 	return nil, nil
 }
 
-func AnalyzerRun(pass *analysis.Pass, f *ast.File, fileNameFull, fileName string) {
-	fmt.Println("AnalyzerRun: ", fileName, "=====================")
-
-	var ident *ast.Ident
-	isExist := false
+// 1. そもそも ID 型で定義されていない => コンストラクタをみる必用がない
+// 2. ID 型で定義されているが、名前がファイル名と一致していない => コンストラクタも見て、名前が一致しているか確認
+// // 2-1. コンストラクタが定義されていない
+// // 2-2. コンストラクタが定義されているが、名前がファイル名と一致していない
+// // 2-3. コンストラクタが定義されていて、名前がファイル名と一致している
+// 3. ID 型で定義されていて、名前がファイル名と一致している => コンストラクタも見て、名前が一致しているか確認
+// // 3-1. コンストラクタが定義されていない
+// // 3-2. コンストラクタが定義されているが、名前がファイル名と一致していない
+// // 3-3. コンストラクタが定義されていて、名前がファイル名と一致している
+func AnalyzerRun(pass *analysis.Pass, f *ast.File, fileNameFull, fileName string) *ast.Ident {
+	var idIdent *ast.Ident
+	isExistIDIdent := false
 	ast.Inspect(f, func(n ast.Node) bool {
-		if !isExist {
+		if !isExistIDIdent {
 			switch n := n.(type) {
 			case *ast.GenDecl:
 				// IDが定義されていることを確認し、IDの名前を取得して、ファイル名と一致するか確認
-				ident = IDAnalyzer(n)
-				if ident != nil {
-					isExist = true
-					return true
+				idIdent = IDAnalyzer(n)
+				if idIdent != nil {
+					isExistIDIdent = true
 				}
 			}
 		}
 		return true
 	})
 
-	if !isExist || ident == nil {
+	if !isExistIDIdent || idIdent == nil {
 		pass.Reportf(f.Pos(), "ID型で定義されていません")
-		return
+		return nil
 	}
 
 	// ファイル名と一致するか確認
-	if ident.Name != fileName+"ID" {
-		pass.Reportf(ident.Pos(), "ファイル名%vとID名%vが一致していません", strings.Split(fileNameFull, "/")[len(strings.Split(fileNameFull, "/"))-1], ident.Name)
-		return
+	if idIdent.Name != fileName+"ID" {
+		pass.Reportf(idIdent.Pos(), "ファイル名%vとID名%vが一致していません", strings.Split(fileNameFull, "/")[len(strings.Split(fileNameFull, "/"))-1], idIdent.Name)
 	}
 
-	// IDのコンストラクタが定義されていることを確認する
+	return idIdent
+	// TODO: 一番親に戻る方法
+	//
+	//isExistConstructorIdent := false
+	//var constructorIdent *ast.Ident
+	//
+	//// IDのコンストラクタが定義されていることを確認する
+	//ast.Inspect(f, func(n ast.Node) bool {
+	//	if !isExistConstructorIdent {
+	//		switch n := n.(type) {
+	//		case *ast.FuncDecl:
+	//			// コンストラクタが定義されていることを確認
+	//			constructorIdent = ConstructorAnalyzer(n, idIdent)
+	//			if constructorIdent != nil {
+	//				isExistConstructorIdent = true
+	//			}
+	//		}
+	//	}
+	//	return true
+	//})
+	//
+	//if !isExistConstructorIdent || constructorIdent == nil {
+	//	pass.Reportf(f.Pos(), "IDのコンストラクタが定義されていません")
+	//	return
+	//}
+	//
+	//// コンストラクタの名前がNew+ファイル名+IDであることを確認
+	//if constructorIdent.Name != "New"+fileName+"ID" {
+	//	pass.Reportf(constructorIdent.Pos(), "コンストラクタ名%vがNew%vIDではありません", constructorIdent.Name, fileName)
+	//	return
+	//}
 }
 
 func IDAnalyzer(n *ast.GenDecl) *ast.Ident {
@@ -112,3 +159,24 @@ func IDAnalyzer(n *ast.GenDecl) *ast.Ident {
 	// ここにきたらID型で定義されていない
 	return nil
 }
+
+//func ConstructorAnalyzer(n *ast.FuncDecl, idIdent *ast.Ident) *ast.Ident {
+//	// 返り値が1つでない場合は処理しない
+//	if len(n.Type.Results.List) != 1 {
+//		return nil
+//	}
+//
+//	// 返り値がID型でない場合は処理しない
+//	returnType, ok := n.Type.Results.List[0].Type.(*ast.Ident)
+//	if !ok {
+//		return nil
+//	}
+//
+//	fmt.Println("比較します returnType.Name: ", returnType.Name, " idIdent.Name: ", idIdent.Name)
+//	if returnType.Name != idIdent.Name {
+//		return nil
+//	}
+//
+//	// コンストラクタの名前を取得
+//	return n.Name
+//}

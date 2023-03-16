@@ -10,7 +10,7 @@ import (
 
 const docStruct = "analysis is ..."
 
-// AnalyzerStruct is ...
+// AnalyzerIDConstructor is ...
 var AnalyzerStruct = &analysis.Analyzer{
 	Name: "analysis",
 	Doc:  docStruct,
