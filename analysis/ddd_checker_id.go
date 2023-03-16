@@ -1,7 +1,6 @@
 package analysis
 
 import (
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"golang.org/x/tools/go/analysis"
@@ -42,18 +41,14 @@ func runID(pass *analysis.Pass) (any, error) {
 			return nil, err
 		}
 
-		fmt.Println("AnalyzerRun Ident: ", ConvertFileName(fileName), "Start =====================")
 		idIdent := AnalyzerRun(pass, f, fileName, ConvertFileName(fileName))
-		fmt.Println("AnalyzerRun Ident: ", ConvertFileName(fileName), "End =====================")
 
 		if idIdent == nil {
-			return nil, nil
+			continue
 		}
 
 		// IDのコンストラクタが定義されていることを確認
-		fmt.Println("AnalyzerIDConstructorRun: ", ConvertFileName(fileName), "Start =====================")
 		AnalyzerIDConstructorRun(pass, idIdent, f, fileName, ConvertFileName(fileName))
-		fmt.Println("AnalyzerIDConstructorRun: ", ConvertFileName(fileName), "End =====================")
 
 	}
 	return nil, nil
@@ -96,36 +91,6 @@ func AnalyzerRun(pass *analysis.Pass, f *ast.File, fileNameFull, fileName string
 	}
 
 	return idIdent
-	// TODO: 一番親に戻る方法
-	//
-	//isExistConstructorIdent := false
-	//var constructorIdent *ast.Ident
-	//
-	//// IDのコンストラクタが定義されていることを確認する
-	//ast.Inspect(f, func(n ast.Node) bool {
-	//	if !isExistConstructorIdent {
-	//		switch n := n.(type) {
-	//		case *ast.FuncDecl:
-	//			// コンストラクタが定義されていることを確認
-	//			constructorIdent = ConstructorAnalyzer(n, idIdent)
-	//			if constructorIdent != nil {
-	//				isExistConstructorIdent = true
-	//			}
-	//		}
-	//	}
-	//	return true
-	//})
-	//
-	//if !isExistConstructorIdent || constructorIdent == nil {
-	//	pass.Reportf(f.Pos(), "IDのコンストラクタが定義されていません")
-	//	return
-	//}
-	//
-	//// コンストラクタの名前がNew+ファイル名+IDであることを確認
-	//if constructorIdent.Name != "New"+fileName+"ID" {
-	//	pass.Reportf(constructorIdent.Pos(), "コンストラクタ名%vがNew%vIDではありません", constructorIdent.Name, fileName)
-	//	return
-	//}
 }
 
 func IDAnalyzer(n *ast.GenDecl) *ast.Ident {
@@ -160,23 +125,53 @@ func IDAnalyzer(n *ast.GenDecl) *ast.Ident {
 	return nil
 }
 
-//func ConstructorAnalyzer(n *ast.FuncDecl, idIdent *ast.Ident) *ast.Ident {
-//	// 返り値が1つでない場合は処理しない
-//	if len(n.Type.Results.List) != 1 {
-//		return nil
-//	}
-//
-//	// 返り値がID型でない場合は処理しない
-//	returnType, ok := n.Type.Results.List[0].Type.(*ast.Ident)
-//	if !ok {
-//		return nil
-//	}
-//
-//	fmt.Println("比較します returnType.Name: ", returnType.Name, " idIdent.Name: ", idIdent.Name)
-//	if returnType.Name != idIdent.Name {
-//		return nil
-//	}
-//
-//	// コンストラクタの名前を取得
-//	return n.Name
-//}
+func AnalyzerIDConstructorRun(pass *analysis.Pass, idIdent *ast.Ident, f *ast.File, fileNameFull, fileName string) {
+	isExistConstructorIdent := false
+	var constructorIdent *ast.Ident
+
+	// IDのコンストラクタが定義されていることを確認する
+	ast.Inspect(f, func(n ast.Node) bool {
+		if !isExistConstructorIdent {
+			switch n := n.(type) {
+			case *ast.FuncDecl:
+				// コンストラクタが定義されていることを確認
+				constructorIdent = ConstructorAnalyzer(n, idIdent)
+				if constructorIdent != nil {
+					isExistConstructorIdent = true
+				}
+			}
+		}
+		return true
+	})
+
+	if !isExistConstructorIdent || constructorIdent == nil {
+		pass.Reportf(f.Pos(), "IDのコンストラクタが定義されていません")
+		return
+	}
+
+	// コンストラクタの名前がNew+ファイル名+IDであることを確認
+	if constructorIdent.Name != "New"+fileName+"ID" {
+		pass.Reportf(constructorIdent.Pos(), "コンストラクタ名%vがNew%vIDではありません", constructorIdent.Name, fileName)
+		return
+	}
+}
+
+func ConstructorAnalyzer(n *ast.FuncDecl, idIdent *ast.Ident) *ast.Ident {
+	// 返り値が1つでない場合は処理しない
+	if len(n.Type.Results.List) != 1 {
+		return nil
+	}
+
+	// 返り値がID型でない場合は処理しない
+	returnType, ok := n.Type.Results.List[0].Type.(*ast.Ident)
+	if !ok {
+		return nil
+	}
+
+	if returnType.Name != idIdent.Name {
+		return nil
+	}
+
+	// コンストラクタの名前を取得
+	return n.Name
+}

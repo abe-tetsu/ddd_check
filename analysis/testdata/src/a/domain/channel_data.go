@@ -4,7 +4,7 @@ import "time"
 
 type ChannelID ID // want "ファイル名channel_data.goとID名ChannelIDが一致していません"
 
-func NewChannelDataID(channelID string) ChannelID {
+func NewChannelDataID(channelID string) ChannelID { // OK
 	return ChannelID(channelID)
 }
 

@@ -1,3 +1,4 @@
+// 完璧なテストケース
 package domain
 
 import "time"
@@ -6,7 +7,7 @@ type UserChatDataID ID // OK
 
 type UserChatDataIDs []UserChatDataID
 
-func NewUserChatDataID(username string, userNumber int) UserChatDataID {
+func NewUserChatDataID(username string, userNumber int) UserChatDataID { // OK
 	return UserChatDataID(username + "_" + string(userNumber))
 }
 
