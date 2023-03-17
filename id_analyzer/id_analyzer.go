@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func AnalyzerRun(result *IDAnalyzerResult, f *ast.File, fileNameFull, fileName string) *ast.Ident {
+func IDAnalyzerRun(result *IDAnalyzerResult, f *ast.File, fileNameFull, fileName string) *ast.Ident {
 	var idIdent *ast.Ident
 	isExistIDIdent := false
 	ast.Inspect(f, func(n ast.Node) bool {

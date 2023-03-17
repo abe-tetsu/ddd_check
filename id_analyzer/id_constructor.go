@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func AnalyzerIDConstructorRun(result *IDAnalyzerResult, idIdent *ast.Ident, f *ast.File, fileName string) {
+func IDConstructorAnalyzerRun(result *IDAnalyzerResult, idIdent *ast.Ident, f *ast.File, fileName string) {
 	isExistConstructorIdent := false
 	var constructorIdent *ast.Ident
 
@@ -16,7 +16,7 @@ func AnalyzerIDConstructorRun(result *IDAnalyzerResult, idIdent *ast.Ident, f *a
 			switch n := n.(type) {
 			case *ast.FuncDecl:
 				// コンストラクタが定義されていることを確認
-				constructorIdent = ConstructorAnalyzer(n, idIdent)
+				constructorIdent = IDConstructorAnalyzer(n, idIdent)
 				if constructorIdent != nil {
 					isExistConstructorIdent = true
 				}
@@ -41,7 +41,7 @@ func AnalyzerIDConstructorRun(result *IDAnalyzerResult, idIdent *ast.Ident, f *a
 	}
 }
 
-func ConstructorAnalyzer(n *ast.FuncDecl, idIdent *ast.Ident) *ast.Ident {
+func IDConstructorAnalyzer(n *ast.FuncDecl, idIdent *ast.Ident) *ast.Ident {
 	if n == nil {
 		return nil
 	}

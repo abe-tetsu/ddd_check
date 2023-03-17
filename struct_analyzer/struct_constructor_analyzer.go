@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func AnalyzerStructConstructorRun(result *StructAnalyzerResult, structIdent *ast.Ident, f *ast.File, fileName string) {
+func StructConstructorAnalyzerRun(result *StructAnalyzerResult, structIdent *ast.Ident, f *ast.File, fileName string) {
 	var constructorIdents []*ast.Ident
 
 	// 構造体のコンストラクタが定義されていることを確認する
@@ -14,7 +14,7 @@ func AnalyzerStructConstructorRun(result *StructAnalyzerResult, structIdent *ast
 		switch n := n.(type) {
 		case *ast.FuncDecl:
 			// コンストラクタが定義されていることを確認
-			constructorIdents = append(constructorIdents, ConstructorAnalyzer(n, structIdent))
+			constructorIdents = append(constructorIdents, StructConstructorAnalyzer(n, structIdent))
 		}
 
 		return true
@@ -44,7 +44,7 @@ func AnalyzerStructConstructorRun(result *StructAnalyzerResult, structIdent *ast
 	return
 }
 
-func ConstructorAnalyzer(n *ast.FuncDecl, idIdent *ast.Ident) *ast.Ident {
+func StructConstructorAnalyzer(n *ast.FuncDecl, idIdent *ast.Ident) *ast.Ident {
 	if n == nil {
 		return nil
 	}

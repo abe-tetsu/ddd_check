@@ -51,16 +51,16 @@ func runID(pass *analysis.Pass) (any, error) {
 			return nil, err
 		}
 
-		idIdent := id_analyzer.AnalyzerRun(&idAnalyzeResult, f, fileName, ConvertFileName(fileName))
+		idIdent := id_analyzer.IDAnalyzerRun(&idAnalyzeResult, f, fileName, ConvertFileName(fileName))
 		if idIdent != nil {
 			// IDのコンストラクタが定義されていることを確認
-			id_analyzer.AnalyzerIDConstructorRun(&idAnalyzeResult, idIdent, f, ConvertFileName(fileName))
+			id_analyzer.IDConstructorAnalyzerRun(&idAnalyzeResult, idIdent, f, ConvertFileName(fileName))
 		}
 
 		structIdent := struct_analyzer.StructAnalyzerRun(&structAnalyzeResult, f, fileName, ConvertFileName(fileName))
 		if structIdent != nil {
 			// 構造体のコンストラクタが定義されていることを確認
-			struct_analyzer.AnalyzerStructConstructorRun(&structAnalyzeResult, structIdent, f, ConvertFileName(fileName))
+			struct_analyzer.StructConstructorAnalyzerRun(&structAnalyzeResult, structIdent, f, ConvertFileName(fileName))
 		}
 
 		// 結果をレポート
