@@ -1,4 +1,4 @@
-package analysis
+package ddd_check
 
 import "strings"
 

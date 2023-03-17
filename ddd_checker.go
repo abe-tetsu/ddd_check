@@ -1,4 +1,4 @@
-package analysis
+package ddd_check
 
 import (
 	"fmt"
@@ -10,11 +10,11 @@ import (
 	"strings"
 )
 
-const docID = "analysis is ..."
+const docID = "analysis is checker for DDD"
 
 // AnalyzerIDConstructor is ...
 var AnalyzerID = &analysis.Analyzer{
-	Name: "analysis",
+	Name: "ddd_checker",
 	Doc:  docID,
 	Run:  runID,
 	Requires: []*analysis.Analyzer{

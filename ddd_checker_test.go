@@ -1,9 +1,9 @@
-package analysis_test
+package ddd_check_test
 
 import (
 	"testing"
 
-	"analysis"
+	"github.com/abe-tetsu/ddd_check"
 
 	"github.com/gostaticanalysis/testutil"
 	"golang.org/x/tools/go/analysis/analysistest"
@@ -12,5 +12,5 @@ import (
 // TestAnalyzer is a test for AnalyzerIDConstructor.
 func TestAnalyzer(t *testing.T) {
 	testdata := testutil.WithModules(t, analysistest.TestData(), nil)
-	analysistest.Run(t, testdata, analysis.AnalyzerID, "a/...")
+	analysistest.Run(t, testdata, ddd_check.AnalyzerID, "a/...")
 }

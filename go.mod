@@ -1,4 +1,4 @@
-module analysis
+module github.com/abe-tetsu/ddd_check
 
 go 1.19
 
