@@ -1,4 +1,7 @@
 # ddd_check
+
+![CI](https://img.shields.io/github/actions/workflow/status/abe-tetsu/ddd_check/go.yml?branch=main&label=test)
+
 ## 概要
 domain層で定義されている構造体とIDについてチェックするツールです。
 
