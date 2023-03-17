@@ -4,11 +4,11 @@ import "time"
 
 type UserInfoDataID ID // OK
 
-func NewUserInfoDataTestID(username string, userNumber int) UserInfoDataID { // want "コンストラクタ名NewUserInfoDataTestIDがNewUserInfoDataIDではありません"
+func NewUserInfoDataTestID(username string, userNumber int) UserInfoDataID { // want "ファイル名UserInfoDataとコンストラクタ名NewUserInfoDataTestIDが一致していません"
 	return UserInfoDataID(username + "_" + string(userNumber))
 }
 
-type UserData struct { // want "ファイル名user_info_data.goとID名UserDataが一致していません"
+type UserData struct { // want "ファイル名user_info_data.goと構造体名UserDataが一致していません"
 	ID         UserInfoDataID
 	Username   string
 	UserNumber int
@@ -16,7 +16,7 @@ type UserData struct { // want "ファイル名user_info_data.goとID名UserData
 	UpdatedAt  time.Time
 }
 
-func NewUserData(username string, userNumber int) UserData { // want "コンストラクタ名NewUserDataがNewUserInfoDataではありません"
+func NewUserData(username string, userNumber int) UserData { // want "コンストラクタ名NewUserDataにファイル名UserInfoDataが含まれていません"
 	return UserData{
 		ID:         NewUserInfoDataTestID(username, userNumber),
 		Username:   username,

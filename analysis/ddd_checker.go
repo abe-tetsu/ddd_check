@@ -46,6 +46,16 @@ type Result struct {
 
 // ケース
 // 1. そもそも ID 型で定義されていない => コンストラクタをみる必用がない
+// // // 1-1-1. 構造体も定義されていない　=> コンストラクタをみる必要がない
+// // // 1-1-2. 構造体が定義されているが、名前がファイル名と一致していない
+// // // // 1-1-2-1. コンストラクタが定義されていない
+// // // // 1-1-2-2. コンストラクタが定義されているが、名前がファイル名と一致していない
+// // // // 1-1-2-3. コンストラクタが定義されていて、名前がファイル名と一致している
+// // // 1-1-3. 構造体が定義されていて、名前がファイル名と一致している
+// // // // 1-1-3-1. コンストラクタが定義されていない
+// // // // 1-1-3-2. コンストラクタが定義されているが、名前がファイル名と一致していない
+// // // // 1-1-3-3. コンストラクタが定義されていて、名前がファイル名と一致している
+
 // 2. ID 型で定義されているが、名前がファイル名と一致していない => コンストラクタも見て、名前が一致しているか確認
 // // 2-1. コンストラクタが定義されていない
 // // 2-2. コンストラクタが定義されているが、名前がファイル名と一致していない
@@ -71,6 +81,14 @@ func runID(pass *analysis.Pass) (any, error) {
 	// ファイル単位で解析する
 	//fs := token.NewFileSet()
 	for _, fileName := range fileNameList {
+		//fmt.Println()
+		//fmt.Println("ファイル名: " + fileName)
+		// ファイル名に _test が含まれている場合は処理しない
+		if strings.Contains(fileName, "_test") || strings.Contains(fileName, "_payload") {
+			//fmt.Println("テストファイルなので飛ばします")
+			continue
+		}
+
 		// 結果を格納する構造体を初期化
 		result := Result{}
 
@@ -87,7 +105,8 @@ func runID(pass *analysis.Pass) (any, error) {
 
 		structIdent := StructAnalyzerRun(&result, f, fileName, ConvertFileName(fileName))
 		if structIdent != nil {
-			//fmt.Println("structIdent", structIdent)
+			//fmt.Println("コンストラクタ判定に入ります 構造体の名前: " + structIdent.Name)
+
 			// 構造体のコンストラクタが定義されていることを確認
 			AnalyzerStructConstructorRun(&result, structIdent, f, ConvertFileName(fileName))
 		}
@@ -122,7 +141,10 @@ func AnalyzerRun(result *Result, f *ast.File, fileNameFull, fileName string) *as
 	}
 
 	// ファイル名と一致するか確認
-	if idIdent.Name != fileName+"ID" {
+	// TODO: 大文字と小文字を区別しない実装にしている
+	identNameLower := strings.ToLower(idIdent.Name)
+	fileNameLower := strings.ToLower(fileName)
+	if identNameLower != fileNameLower+"id" {
 		result.IDError = idIdent.Pos()
 		result.IDErrorMessage = fmt.Sprintf("ファイル名%vとID名%vが一致していません", strings.Split(fileNameFull, "/")[len(strings.Split(fileNameFull, "/"))-1], idIdent.Name)
 	}
@@ -187,15 +209,36 @@ func AnalyzerIDConstructorRun(result *Result, idIdent *ast.Ident, f *ast.File, f
 		return
 	}
 
-	// コンストラクタの名前がNew+ファイル名+IDであることを確認
-	if constructorIdent.Name != "New"+fileName+"ID" {
+	// ファイル名と一致するか確認
+	// TODO: 大文字と小文字を区別しない実装にしている
+	constructorNameLower := strings.ToLower(constructorIdent.Name)
+	fileNameLower := strings.ToLower("New" + fileName + "ID")
+	if constructorNameLower != fileNameLower {
 		result.IDConstructorError = constructorIdent.Pos()
-		result.IDConstructorErrorMessage = fmt.Sprintf("コンストラクタ名%vがNew%vIDではありません", constructorIdent.Name, fileName)
-		return
+		result.IDConstructorErrorMessage = fmt.Sprintf("ファイル名%vとコンストラクタ名%vが一致していません", fileName, constructorIdent.Name)
 	}
+
+	//// コンストラクタの名前がNew+ファイル名+IDであることを確認
+	//if constructorIdent.Name != "New"+fileName+"ID" {
+	//	result.IDConstructorError = constructorIdent.Pos()
+	//	result.IDConstructorErrorMessage = fmt.Sprintf("コンストラクタ名%vがNew%vIDではありません", constructorIdent.Name, fileName)
+	//	return
+	//}
 }
 
 func ConstructorAnalyzer(n *ast.FuncDecl, idIdent *ast.Ident) *ast.Ident {
+	if n == nil {
+		return nil
+	}
+
+	if n.Type == nil {
+		return nil
+	}
+
+	if n.Type.Results == nil {
+		return nil
+	}
+
 	// 返り値が1つでない場合は処理しない
 	if len(n.Type.Results.List) != 1 {
 		return nil
@@ -239,11 +282,17 @@ func StructAnalyzerRun(result *Result, f *ast.File, fileNameFull, fileName strin
 	}
 
 	// ファイル名と一致するか確認
-	//fmt.Println("比較します", "ファイル名", fileName, "構造体名", structIdent.Name)
-	if structIdent.Name != fileName {
+	structIdentNameLower := strings.ToLower(structIdent.Name)
+	fileNameLower := strings.ToLower(fileName)
+	if structIdentNameLower != fileNameLower {
 		result.StructError = structIdent.Pos()
-		result.StructErrorMessage = fmt.Sprintf("ファイル名%vとID名%vが一致していません", strings.Split(fileNameFull, "/")[len(strings.Split(fileNameFull, "/"))-1], structIdent.Name)
+		result.StructErrorMessage = fmt.Sprintf("ファイル名%vと構造体名%vが一致していません", strings.Split(fileNameFull, "/")[len(strings.Split(fileNameFull, "/"))-1], structIdent.Name)
 	}
+
+	//if structIdent.Name != fileName {
+	//	result.StructError = structIdent.Pos()
+	//	result.StructErrorMessage = fmt.Sprintf("ファイル名%vとID名%vが一致していません", strings.Split(fileNameFull, "/")[len(strings.Split(fileNameFull, "/"))-1], structIdent.Name)
+	//}
 
 	return structIdent
 }
@@ -292,21 +341,38 @@ func AnalyzerStructConstructorRun(result *Result, structIdent *ast.Ident, f *ast
 	})
 
 	if !isExistConstructorIdent || constructorIdent == nil {
+		//fmt.Println("構造体のコンストラクタが定義されていません")
 		result.StructConstructorError = f.Pos()
 		result.StructConstructorErrorMessage = "構造体のコンストラクタが定義されていません"
 		return
 	}
 
-	// コンストラクタの名前がNew+ファイル名であることを確認
-	if constructorIdent.Name != "New"+fileName {
+	//fmt.Println("比較します: ", "constructor名:", constructorIdent.Name, "ファイル名:", fileName)
+	constructorIdentNameLower := strings.ToLower(constructorIdent.Name)
+	fileNameLower := strings.ToLower(fileName)
+	// コンストラクタは複数個定義されている可能性がある。その場合は、コンストラクタ名にファイル名が含まれているかどうかで判定する。
+	if !strings.Contains(constructorIdentNameLower, fileNameLower) {
 		result.StructConstructorError = constructorIdent.Pos()
-		result.StructConstructorErrorMessage = fmt.Sprintf("コンストラクタ名%vがNew%vではありません", constructorIdent.Name, fileName)
-		return
+		result.StructConstructorErrorMessage = fmt.Sprintf("コンストラクタ名%vにファイル名%vが含まれていません", constructorIdent.Name, fileName)
 	}
+
+	//if constructorIdentNameLower != "new"+fileNameLower {
+	//	result.StructConstructorError = constructorIdent.Pos()
+	//	result.StructConstructorErrorMessage = fmt.Sprintf("コンストラクタ名%vがNew%vではありません", constructorIdent.Name, fileName)
+	//}
+	return
+
+	// コンストラクタの名前がNew+ファイル名であることを確認
+	//if constructorIdent.Name != "New"+fileName {
+	//	result.StructConstructorError = constructorIdent.Pos()
+	//	result.StructConstructorErrorMessage = fmt.Sprintf("コンストラクタ名%vがNew%vではありません", constructorIdent.Name, fileName)
+	//	return
+	//}
 }
 
 func reportResult(result Result, pass *analysis.Pass) {
 	// IDと構造体が存在しない時にファイルの先頭にエラーを出す
+	//fmt.Printf("result: %+v \n", result)
 	if result.IDErrorMessage == "ID型で定義されていません" && result.StructErrorMessage == "構造体が定義されていません" {
 		pass.Reportf(result.IDError, "ID型と構造体が定義されていません")
 		return
