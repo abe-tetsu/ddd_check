@@ -1,18 +1,8 @@
-package result
+package struct_analyzer
 
 import "go/token"
 
-type Result struct {
-	// IDが正しく定義されているかどうか
-	//IsIDExist      bool
-	IDError        token.Pos
-	IDErrorMessage string
-
-	// IDのコンストラクタが正しく定義されているかどうか
-	//IsIDConstructorExist      bool
-	IDConstructorError        token.Pos
-	IDConstructorErrorMessage string
-
+type StructAnalyzerResult struct {
 	// 構造体が正しく定義されているかどうか
 	//IsStructExist      bool
 	StructError        token.Pos

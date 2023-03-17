@@ -2,12 +2,11 @@ package id_analyzer
 
 import (
 	"fmt"
-	"github.com/abe-tetsu/ddd_check/result"
 	"go/ast"
 	"strings"
 )
 
-func AnalyzerRun(result *result.Result, f *ast.File, fileNameFull, fileName string) *ast.Ident {
+func AnalyzerRun(result *IDAnalyzerResult, f *ast.File, fileNameFull, fileName string) *ast.Ident {
 	var idIdent *ast.Ident
 	isExistIDIdent := false
 	ast.Inspect(f, func(n ast.Node) bool {

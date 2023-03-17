@@ -2,12 +2,11 @@ package struct_analyzer
 
 import (
 	"fmt"
-	"github.com/abe-tetsu/ddd_check/result"
 	"go/ast"
 	"strings"
 )
 
-func AnalyzerStructConstructorRun(result *result.Result, structIdent *ast.Ident, f *ast.File, fileName string) {
+func AnalyzerStructConstructorRun(result *StructAnalyzerResult, structIdent *ast.Ident, f *ast.File, fileName string) {
 	var constructorIdents []*ast.Ident
 
 	// 構造体のコンストラクタが定義されていることを確認する

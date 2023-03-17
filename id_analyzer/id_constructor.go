@@ -2,12 +2,11 @@ package id_analyzer
 
 import (
 	"fmt"
-	"github.com/abe-tetsu/ddd_check/result"
 	"go/ast"
 	"strings"
 )
 
-func AnalyzerIDConstructorRun(result *result.Result, idIdent *ast.Ident, f *ast.File, fileName string) {
+func AnalyzerIDConstructorRun(result *IDAnalyzerResult, idIdent *ast.Ident, f *ast.File, fileName string) {
 	isExistConstructorIdent := false
 	var constructorIdent *ast.Ident
 

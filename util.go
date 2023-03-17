@@ -1,7 +1,8 @@
 package ddd_check
 
 import (
-	"github.com/abe-tetsu/ddd_check/result"
+	"github.com/abe-tetsu/ddd_check/id_analyzer"
+	"github.com/abe-tetsu/ddd_check/struct_analyzer"
 	"golang.org/x/tools/go/analysis"
 	"strings"
 )
@@ -17,36 +18,36 @@ func ConvertFileName(fileNameOld string) string {
 	return strings.Replace(strings.Title(strings.Replace(fileName, "_", " ", -1)), " ", "", -1)
 }
 
-func ReportResult(result result.Result, pass *analysis.Pass) {
+func ReportResult(idAnalyzeResult id_analyzer.IDAnalyzerResult, structAnalyzeResult struct_analyzer.StructAnalyzerResult, pass *analysis.Pass) {
 	// IDと構造体が存在しない時にファイルの先頭にエラーを出す
-	if result.IDErrorMessage == "ID型で定義されていません" && result.StructErrorMessage == "構造体が定義されていません" {
-		pass.Reportf(result.IDError, "ID型と構造体が定義されていません")
+	if idAnalyzeResult.IDErrorMessage == "ID型で定義されていません" && structAnalyzeResult.StructErrorMessage == "構造体が定義されていません" {
+		pass.Reportf(idAnalyzeResult.IDError, "ID型と構造体が定義されていません")
 		return
 	}
 
 	// IDのコンストラクタと構造体のコンストラクタが存在しない時にファイルの先頭にエラーを出す
-	if result.IDConstructorErrorMessage == "IDのコンストラクタが定義されていません" && len(result.StructConstructorErrorMessage) != 0 {
-		if result.StructConstructorErrorMessage[0] == "構造体のコンストラクタが定義されていません" {
-			pass.Reportf(result.IDConstructorError, "IDと構造体のコンストラクタの定義がされていません")
+	if idAnalyzeResult.IDConstructorErrorMessage == "IDのコンストラクタが定義されていません" && len(structAnalyzeResult.StructConstructorErrorMessage) != 0 {
+		if structAnalyzeResult.StructConstructorErrorMessage[0] == "構造体のコンストラクタが定義されていません" {
+			pass.Reportf(idAnalyzeResult.IDConstructorError, "IDと構造体のコンストラクタの定義がされていません")
 		}
 		return
 	}
 
-	if result.IDErrorMessage != "" {
-		pass.Reportf(result.IDError, result.IDErrorMessage)
+	if idAnalyzeResult.IDErrorMessage != "" {
+		pass.Reportf(idAnalyzeResult.IDError, idAnalyzeResult.IDErrorMessage)
 	}
 
-	if result.IDConstructorErrorMessage != "" {
-		pass.Reportf(result.IDConstructorError, result.IDConstructorErrorMessage)
+	if idAnalyzeResult.IDConstructorErrorMessage != "" {
+		pass.Reportf(idAnalyzeResult.IDConstructorError, idAnalyzeResult.IDConstructorErrorMessage)
 	}
 
-	if result.StructErrorMessage != "" {
-		pass.Reportf(result.StructError, result.StructErrorMessage)
+	if structAnalyzeResult.StructErrorMessage != "" {
+		pass.Reportf(structAnalyzeResult.StructError, structAnalyzeResult.StructErrorMessage)
 	}
 
-	if len(result.StructConstructorErrorMessage) != 0 {
-		for i, v := range result.StructConstructorErrorMessage {
-			pass.Reportf(result.StructConstructorError[i], v)
+	if len(structAnalyzeResult.StructConstructorErrorMessage) != 0 {
+		for i, v := range structAnalyzeResult.StructConstructorErrorMessage {
+			pass.Reportf(structAnalyzeResult.StructConstructorError[i], v)
 		}
 	}
 }

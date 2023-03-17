@@ -2,12 +2,11 @@ package struct_analyzer
 
 import (
 	"fmt"
-	"github.com/abe-tetsu/ddd_check/result"
 	"go/ast"
 	"strings"
 )
 
-func StructAnalyzerRun(result *result.Result, f *ast.File, fileNameFull, fileName string) *ast.Ident {
+func StructAnalyzerRun(result *StructAnalyzerResult, f *ast.File, fileNameFull, fileName string) *ast.Ident {
 	var structIdent *ast.Ident
 	isExistStructIdent := false
 	ast.Inspect(f, func(n ast.Node) bool {
