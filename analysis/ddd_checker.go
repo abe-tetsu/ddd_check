@@ -40,8 +40,8 @@ type Result struct {
 
 	// 構造体のコンストラクタが正しく定義されているかどうか
 	//IsStructConstructorExist      bool
-	StructConstructorError        token.Pos
-	StructConstructorErrorMessage string
+	StructConstructorError        []token.Pos
+	StructConstructorErrorMessage []string
 }
 
 // ケース
@@ -322,40 +322,42 @@ func StructAnalyzer(n *ast.GenDecl) *ast.Ident {
 }
 
 func AnalyzerStructConstructorRun(result *Result, structIdent *ast.Ident, f *ast.File, fileName string) {
-	isExistConstructorIdent := false
-	var constructorIdent *ast.Ident
+	var constructorIdents []*ast.Ident
 
 	// 構造体のコンストラクタが定義されていることを確認する
 	ast.Inspect(f, func(n ast.Node) bool {
-		if !isExistConstructorIdent {
-			switch n := n.(type) {
-			case *ast.FuncDecl:
-				// コンストラクタが定義されていることを確認
-				constructorIdent = ConstructorAnalyzer(n, structIdent)
-				if constructorIdent != nil {
-					isExistConstructorIdent = true
-				}
-			}
+		switch n := n.(type) {
+		case *ast.FuncDecl:
+			// コンストラクタが定義されていることを確認
+			constructorIdents = append(constructorIdents, ConstructorAnalyzer(n, structIdent))
 		}
+
 		return true
 	})
 
-	if !isExistConstructorIdent || constructorIdent == nil {
+	if len(constructorIdents) == 0 {
 		//fmt.Println("構造体のコンストラクタが定義されていません")
-		result.StructConstructorError = f.Pos()
-		result.StructConstructorErrorMessage = "構造体のコンストラクタが定義されていません"
+		result.StructConstructorError = append(result.StructConstructorError, f.Pos())
+		result.StructConstructorErrorMessage = append(result.StructConstructorErrorMessage, "構造体のコンストラクタが定義されていません")
 		return
 	}
 
-	//fmt.Println("比較します: ", "constructor名:", constructorIdent.Name, "ファイル名:", fileName)
-	constructorIdentNameLower := strings.ToLower(constructorIdent.Name)
-	fileNameLower := strings.ToLower(fileName)
-	// コンストラクタは複数個定義されている可能性がある。その場合は、コンストラクタ名にファイル名が含まれているかどうかで判定する。
-	if !strings.Contains(constructorIdentNameLower, fileNameLower) {
-		result.StructConstructorError = constructorIdent.Pos()
-		result.StructConstructorErrorMessage = fmt.Sprintf("コンストラクタ名%vにファイル名%vが含まれていません", constructorIdent.Name, fileName)
-	}
+	//fmt.Println("コンストラクタの数: ", len(constructorIdents))
+	for _, constructorIdent := range constructorIdents {
+		if constructorIdent == nil {
+			continue
+		}
 
+		//fmt.Println("コンストラクタ名: ", constructorIdent.Name)
+		//fmt.Println("比較します: ", "constructor名:", constructorIdent.Name, "ファイル名:", fileName)
+		constructorIdentNameLower := strings.ToLower(constructorIdent.Name)
+		fileNameLower := strings.ToLower(fileName)
+		// コンストラクタは複数個定義されている可能性がある。その場合は、コンストラクタ名にファイル名が含まれているかどうかで判定する。
+		if !strings.Contains(constructorIdentNameLower, fileNameLower) {
+			result.StructConstructorError = append(result.StructConstructorError, constructorIdent.Pos())
+			result.StructConstructorErrorMessage = append(result.StructConstructorErrorMessage, fmt.Sprintf("コンストラクタ名%vにファイル名%vが含まれていません", constructorIdent.Name, fileName))
+		}
+	}
 	//if constructorIdentNameLower != "new"+fileNameLower {
 	//	result.StructConstructorError = constructorIdent.Pos()
 	//	result.StructConstructorErrorMessage = fmt.Sprintf("コンストラクタ名%vがNew%vではありません", constructorIdent.Name, fileName)
@@ -379,8 +381,10 @@ func reportResult(result Result, pass *analysis.Pass) {
 	}
 
 	// IDのコンストラクタと構造体のコンストラクタが存在しない時にファイルの先頭にエラーを出す
-	if result.IDConstructorErrorMessage == "IDのコンストラクタが定義されていません" && result.StructConstructorErrorMessage == "構造体のコンストラクタが定義されていません" {
-		pass.Reportf(result.IDConstructorError, "IDと構造体のコンストラクタの定義がされていません")
+	if result.IDConstructorErrorMessage == "IDのコンストラクタが定義されていません" && len(result.StructConstructorErrorMessage) != 0 {
+		if result.StructConstructorErrorMessage[0] == "構造体のコンストラクタが定義されていません" {
+			pass.Reportf(result.IDConstructorError, "IDと構造体のコンストラクタの定義がされていません")
+		}
 		return
 	}
 
@@ -396,7 +400,9 @@ func reportResult(result Result, pass *analysis.Pass) {
 		pass.Reportf(result.StructError, result.StructErrorMessage)
 	}
 
-	if result.StructConstructorErrorMessage != "" {
-		pass.Reportf(result.StructConstructorError, result.StructConstructorErrorMessage)
+	if len(result.StructConstructorErrorMessage) != 0 {
+		for i, v := range result.StructConstructorErrorMessage {
+			pass.Reportf(result.StructConstructorError[i], v)
+		}
 	}
 }

@@ -25,3 +25,27 @@ func NewUserData(username string, userNumber int) UserData { // want "コンス�
 		UpdatedAt:  time.Now(),
 	}
 }
+
+func NewUserDataFromTest(username string, userNumber int) UserData { // want "コンストラクタ名NewUserDataFromTestにファイル名UserInfoDataが含まれていません"
+	return UserData{
+		ID:         NewUserInfoDataTestID(username, userNumber),
+		Username:   username,
+		UserNumber: userNumber,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+}
+
+func NewUserInfoData(username string, userNumber int) UserData { // OK
+	return UserData{
+		ID:         NewUserInfoDataTestID(username, userNumber),
+		Username:   username,
+		UserNumber: userNumber,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+}
+
+func test() {
+	NewUserInfoData("test", 1)
+}

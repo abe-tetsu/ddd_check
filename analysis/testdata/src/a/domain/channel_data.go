@@ -23,3 +23,30 @@ func NewChannel(channelID string) ChannelData { // want "コンストラクタ�
 		UpdatedAt: time.Now(),
 	}
 }
+
+func Newchanneldataaa(channelID string) ChannelData { // TODO: 含まれているかどうか・大文字小文字区別なしで確認しているから、これも通る
+	return ChannelData{
+		ID:        NewChannelDataID(channelID),
+		ChannelID: channelID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+}
+
+func NewChannelData(channelID string) ChannelData { // OK
+	return ChannelData{
+		ID:        NewChannelDataID(channelID),
+		ChannelID: channelID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+}
+
+func NewChanneltesttestData(channelID string) ChannelData { // want "コンストラクタ名NewChanneltesttestDataにファイル名ChannelDataが含まれていません"
+	return ChannelData{
+		ID:        NewChannelDataID(channelID),
+		ChannelID: channelID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+}
